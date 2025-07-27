@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shree's Hub</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0d1117;
+      color: white;
+      font-family: 'Orbitron', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    header p {
+      margin: 5px 0 10px;
+      color: #aaa;
+    }
+
+    .clock {
+      font-size: 3rem;
+      margin: 20px 0 10px;
+      text-align: center;
+      color: white;
+    }
+
+    .bookmark-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .bookmark-bar button {
+      background-color: #21262d;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .bookmark-bar button:hover {
+      background-color: #30363d;
+    }
+
+    .task-container {
+      width: 90vw;
+      max-width: 600px;
+      background: #161b22;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+    }
+
+    .task-input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #taskInput {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      background: #222;
+      color: #fff;
+      outline: none;
+      margin-left: 0;
+    }
+
+    #taskInput::placeholder {
+      color: #888;
+    }
+
+    ul#taskList {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li.task {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1c1c1c;
+      padding: 12px 15px;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    li.task .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    li.task .circle {
+      height: 18px;
+      width: 18px;
+      border: 2px solid #aaa;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    li.task.completed .circle {
+      background-color: #58a6ff;
+    }
+
+    li.task.completed span {
+      text-decoration: line-through;
+      color: #777;
+    }
+
+    .dots-menu {
+      position: relative;
+    }
+
+    .dots-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .menu-options {
+      position: absolute;
+      right: 0;
+      top: 40px;
+      background-color: #333;
+      border-radius: 10px;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .menu-options button {
+      background: none;
+      border: none;
+      padding: 10px 15px;
+      color: white;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .menu-options button:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Hello Shree</h1>
+    <p id="dailyLine">Let’s crush this day 💪</p>
+  </header>
+
+  <div class="clock" id="clock"></div>
+
+  <div class="bookmark-bar">
+    <button onclick="window.open('https://www.youtube.com/playlist?list=PLiCyD_T8QEUIsw9XuNG5ypUT2gdz4Tx7C', '_blank')">Playlist</button>
+    <button onclick="window.open('https://www.youtube.com/@snehitmishra/posts', '_blank')">Posts</button>
+  </div>
+
+  <div class="task-container">
+    <div class="task-input">
+      <input type="text" id="taskInput" placeholder="Enter a task and press Enter...">
+    </div>
+    <ul id="taskList"></ul>
+  </div>
+
+  <script>
+    const clock = document.getElementById('clock');
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      clock.textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const taskInput = document.getElementById("taskInput");
+    const taskList = document.getElementById("taskList");
+
+    function loadTasks() {
+      const saved = localStorage.getItem("tasks");
+      if (!saved) return;
+      const obj = JSON.parse(saved);
+      const now = new Date();
+      if (now.getHours() >= 3) {
+        if (new Date(obj.timestamp).getDate() !== now.getDate()) return;
+      } else {
+        if ((now.getDate() !== new Date(obj.timestamp).getDate()) && now.getHours() < 3) return;
+      }
+      obj.tasks.forEach(t => addTask(t.text, t.completed));
+    }
+
+    function saveTasks() {
+      const data = [];
+      document.querySelectorAll("li.task").forEach(li => {
+        data.push({
+          text: li.querySelector("span").textContent,
+          completed: li.classList.contains("completed")
+        });
+      });
+      localStorage.setItem("tasks", JSON.stringify({ timestamp: new Date(), tasks: data }));
+    }
+
+    function addTask(text, completed = false) {
+      const li = document.createElement("li");
+      li.className = "task" + (completed ? " completed" : "");
+      li.innerHTML = `
+        <div class="left">
+          <div class="circle"></div>
+          <span>${text}</span>
+        </div>
+        <div class="dots-menu">
+          <button class="dots-btn">⋮</button>
+          <div class="menu-options">
+            <button class="edit-btn">Edit</button>
+            <button class="delete-btn">Delete</button>
+          </div>
+        </div>
+      `;
+
+      li.querySelector(".circle").onclick = () => {
+        li.classList.toggle("completed");
+        saveTasks();
+      };
+
+      const dotsBtn = li.querySelector(".dots-btn");
+      const menu = li.querySelector(".menu-options");
+
+      dotsBtn.onclick = (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".menu-options").forEach(m => m.style.display = "none");
+        menu.style.display = "flex";
+      };
+
+      li.querySelector(".edit-btn").onclick = () => {
+        const newText = prompt("Edit task:", li.querySelector("span").textContent);
+        if (newText) {
+          li.querySelector("span").textContent = newText;
+          saveTasks();
+        }
+        menu.style.display = "none";
+      };
+
+      li.querySelector(".delete-btn").onclick = () => {
+        li.remove();
+        saveTasks();
+      };
+
+      taskList.appendChild(li);
+      saveTasks();
+    }
+
+    taskInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && taskInput.value.trim() !== "") {
+        addTask(taskInput.value.trim());
+        taskInput.value = "";
+      }
+    });
+
+    document.body.onclick = () => {
+      document.querySelectorAll(".menu-options").forEach(m => m.style.display = "none");
+    };
+
+    const dailyLines = [
+      "Let’s crush this day 💪",
+      "Victory starts now 🚀",
+      "Keep going, champ 🔥",
+      "Every second counts ⏳",
+      "Stay sharp, stay strong 🧠"
+    ];
+    document.getElementById("dailyLine").textContent = dailyLines[Math.floor(Math.random() * dailyLines.length)];
+
+    loadTasks();
+  </script>
+</body>
+
+</html>
