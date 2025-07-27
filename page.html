@@ -167,10 +167,37 @@
     .menu-options button:hover {
       background-color: #555;
     }
+
+    /* Sticky Note */
+    .sticky-note-container {
+      position: fixed;
+      top: 100px;
+      left: 20px;
+      width: 250px;
+      z-index: 10;
+    }
+
+    #stickyNote {
+      width: 100%;
+      height: 300px;
+      resize: vertical;
+      padding: 12px;
+      background-color: #ffff88;
+      color: #000;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      font-family: sans-serif;
+      font-size: 1rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
   </style>
 </head>
 
 <body>
+  <div class="sticky-note-container">
+    <textarea id="stickyNote" placeholder="Write your sticky note here..."></textarea>
+  </div>
+
   <header>
     <h1>Hello Shree</h1>
     <p id="dailyLine">Let’s crush this day 💪</p>
@@ -299,6 +326,13 @@
     document.getElementById("dailyLine").textContent = dailyLines[Math.floor(Math.random() * dailyLines.length)];
 
     loadTasks();
+
+    // Sticky Note Save
+    const stickyNote = document.getElementById('stickyNote');
+    stickyNote.value = localStorage.getItem("stickyNote") || "";
+    stickyNote.addEventListener("input", () => {
+      localStorage.setItem("stickyNote", stickyNote.value);
+    });
   </script>
 </body>
 
